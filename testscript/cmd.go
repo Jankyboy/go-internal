@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/rogpeppe/go-internal/internal/textutil"
+	"github.com/pkg/diff"
 	"github.com/rogpeppe/go-internal/txtar"
 )
 
@@ -141,7 +141,22 @@ func (ts *TestScript) doCmdCmp(args []string, env bool) {
 		// update the script.
 	}
 
-	ts.Logf("[diff -%s +%s]\n%s\n", name1, name2, textutil.Diff(text1, text2))
+	// pkg/diff is quadratic at the moment.
+	// If the product of the number of lines in the inputs is too large,
+	// don't call pkg.Diff at all as it might take tons of memory or time.
+	// We found one million to be reasonable for an average laptop.
+	const maxLineDiff = 1_000_000
+	if strings.Count(text1, "\n")*strings.Count(text2, "\n") > maxLineDiff {
+		ts.Fatalf("large files %s and %s differ", name1, name2)
+		return
+	}
+
+	var sb strings.Builder
+	if err := diff.Text(name1, name2, text1, text2, &sb); err != nil {
+		ts.Check(err)
+	}
+
+	ts.Logf("%s", sb.String())
 	ts.Fatalf("%s and %s differ", name1, name2)
 }
 

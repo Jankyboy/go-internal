@@ -8,6 +8,7 @@ stdout 'example.com/mod'
 ! stderr .+
 
 -- file.txt --
+>go get -d fruit.com
 >go list -m
 >stdout 'example.com/mod'
 >go list fruit.com/...

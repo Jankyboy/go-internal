@@ -2,11 +2,11 @@
 
 unquote scripts/testscript.txt
 cp scripts/testscript.txt unchanged
-! testscript-update scripts
+! testscript -update scripts
 cmp scripts/testscript.txt unchanged
 
 -- scripts/testscript.txt --
->echo stdout right
+>fprintargs stdout right
 >cp file expect
 >cmp stdout expect
 >
